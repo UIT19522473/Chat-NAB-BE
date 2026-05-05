@@ -1,0 +1,11 @@
+spring:
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL:redis://localhost:6379}
+
+server:
+  port: ${PORT:8080}
+
+frontend:
+  url: ${FRONTEND_URL:http://localhost:3000}
+  ws: ${FRONTEND_WS:*}
