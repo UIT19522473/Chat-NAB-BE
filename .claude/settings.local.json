@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/MyProjects/Learn/Chat_NAB/Chat-NAB-BE/src/main/java/com/chat/nab/config \\\\ *)"
+    ],
+    "additionalDirectories": [
+      "/Users/MyProjects/Learn/Chat_NAB/Chat-NAB-BE/src/main/java/com/chat/nab"
+    ]
+  }
+}
