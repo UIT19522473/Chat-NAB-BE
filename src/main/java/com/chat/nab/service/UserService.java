@@ -68,4 +68,9 @@ public class UserService {
             redisTemplate.delete(sessionKey);
         }
     }
+
+    // Logic giải phóng user
+    public void releaseUser(String userId) {
+        redisTemplate.delete(String.format(ONLINE_KEY, userId));
+    }
 }
