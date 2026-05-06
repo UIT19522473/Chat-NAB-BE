@@ -25,14 +25,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
     }
 
+    // @Override
+    // public void registerStompEndpoints(StompEndpointRegistry registry) {
+    //     registry.addEndpoint("/ws")
+    //             .setAllowedOriginPatterns(
+    //                 "https://chat-nab-fe.onrender.com", // Domain FE mới
+    //                 "http://localhost:3000"             // Để test máy ảo
+    //             )
+    //             .withSockJS();
+    // }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns(
-                    "https://chat-nab-fe.onrender.com", // Domain FE mới
-                    "http://localhost:3000"             // Để test máy ảo
-                )
-                .withSockJS();
+                .setAllowedOriginPatterns("*") // Cho phép tất cả để kiểm tra xem có thông không
+                .withSockJS()
+                .setClientLibraryUrl("https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js");
     }
 
     @Bean
