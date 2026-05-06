@@ -28,7 +28,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns(frontendWs);
+                .setAllowedOriginPatterns(
+                    "https://chat-nab-fe.onrender.com", // Domain FE mới
+                    "http://localhost:3000"             // Để test máy ảo
+                )
+                .withSockJS();
     }
 
     @Bean
