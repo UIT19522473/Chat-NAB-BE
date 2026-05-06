@@ -44,31 +44,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 // .setSupressCors(true);
     }
 
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/ws/**")
-                        .allowedOriginPatterns("*")
-                        .allowedMethods("*")
-                        .allowedHeaders("*");
+                registry.addMapping("/**")
+//                        .allowedOriginPatterns("*")
+                        .allowedOriginPatterns(frontendUrl)
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
-
-//     @Bean
-//     public WebMvcConfigurer corsConfigurer() {
-//         return new WebMvcConfigurer() {
-//             @Override
-//             public void addCorsMappings(CorsRegistry registry) {
-//                 registry.addMapping("/**")
-// //                        .allowedOriginPatterns("*")
-//                         .allowedOriginPatterns(frontendUrl)
-//                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-//                         .allowedHeaders("*")
-//                         .allowCredentials(true);
-//             }
-//         };
-//     }
 }
