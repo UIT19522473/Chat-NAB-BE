@@ -34,4 +34,15 @@ public class UserController {
         }
         return ResponseEntity.ok("OK");
     }
+
+    // API mới: Giải phóng 1 userId cụ thể bằng phương thức GET
+    @GetMapping("/release/{userId}")
+    public ResponseEntity<String> releaseUser(@PathVariable String userId) {
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.badRequest().body("userId is required");
+        }
+        
+        userService.releaseUser(userId);
+        return ResponseEntity.ok("Đã giải phóng user: " + userId);
+    }
 }
