@@ -14,7 +14,7 @@ public class UserService {
 
     private static final String ONLINE_KEY  = "chat:online:%s";
     private static final String SESSION_KEY = "chat:session:%s";
-    private static final Duration TTL = Duration.ofHours(1);
+    private static final Duration TTL = Duration.ofMinutes(10);
 
     private static final List<String> ALL_USERS = List.of(
             "TUANNN2", "HUNGND4", "LAMBMT", "LINHTT1", "TINHNV2"
@@ -30,11 +30,27 @@ public class UserService {
     }
 
     // Atomic claim: trả true nếu claim thành công, false nếu đã bị chiếm
+    // public boolean claimUser(String userId) {
+    //     if (!ALL_USERS.contains(userId)) return false;
+    //     Boolean set = redisTemplate.opsForValue()
+    //             .setIfAbsent(String.format(ONLINE_KEY, userId), "online", TTL);
+    //     return Boolean.TRUE.equals(set);
+    // }
+
+    // Cho phép connect thoải mái, mỗi lần gọi là một lần làm mới (refresh) trạng thái online
     public boolean claimUser(String userId) {
         if (!ALL_USERS.contains(userId)) return false;
-        Boolean set = redisTemplate.opsForValue()
-                .setIfAbsent(String.format(ONLINE_KEY, userId), "online", TTL);
-        return Boolean.TRUE.equals(set);
+        
+        String key = String.format(ONLINE_KEY, userId);
+        // Luôn ghi đè giá trị "online", không quan tâm trước đó có ai chưa
+        redisTemplate.opsForValue().set(key, "online", TTL);
+        
+        return true;
+    }
+    
+    // Thêm hàm này để khi người dùng nhấn Logout thì xóa ngay lập tức
+    public void releaseUser(String userId) {
+        redisTemplate.delete(String.format(ONLINE_KEY, userId));
     }
 
     // Lưu sessionId → userId khi WebSocket connect
