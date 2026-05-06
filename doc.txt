@@ -73,3 +73,5 @@ Yêu cầu output:
   docker run --name redis-chat -p 6379:6379 -d redis:latest
 - Không bỏ sót file quan trọng.
 - Code phải chạy được sau khi copy vào project.
+
+-- redeploy 9:12 06/05/2026
