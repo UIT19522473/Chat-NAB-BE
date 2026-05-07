@@ -1,5 +1,6 @@
 package com.chat.nab.service;
 
+import com.chat.nab.dto.ChatHistoryResponse;
 import com.chat.nab.dto.ChatMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,18 +31,48 @@ public class ChatService {
         }
     }
 
-    public List<ChatMessage> getMessages(String roomId) {
+    /**
+     * Phân trang lịch sử chat.
+     * Redis list: index 0 = oldest, index N-1 = newest (do RPUSH).
+     * page=0 → 20 tin mới nhất, page=1 → 20 tin cũ hơn, v.v.
+     * Kết quả trả về theo thứ tự chronological (oldest → newest) trong mỗi page.
+     */
+    public ChatHistoryResponse getPagedMessages(String roomId, int page, int size) {
         String key = String.format(ROOM_KEY, roomId);
-        List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
-        if (jsonList == null) return List.of();
-        return jsonList.stream()
-                .map(json -> {
-                    try {
-                        return objectMapper.readValue(json, ChatMessage.class);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Failed to deserialize message", e);
-                    }
-                })
+        Long totalSize = redisTemplate.opsForList().size(key);
+
+        if (totalSize == null || totalSize == 0) {
+            return new ChatHistoryResponse(List.of(), false);
+        }
+
+        // end = index của tin mới nhất trong page này
+        long end = totalSize - 1 - ((long) page * size);
+        if (end < 0) {
+            return new ChatHistoryResponse(List.of(), false);
+        }
+
+        long startRaw = end - size + 1;
+        long start = Math.max(0, startRaw);
+        // hasMore = còn tin cũ hơn phía trước start
+        boolean hasMore = startRaw > 0;
+
+        List<String> jsonList = redisTemplate.opsForList().range(key, start, end);
+        if (jsonList == null) {
+            return new ChatHistoryResponse(List.of(), false);
+        }
+
+        List<ChatMessage> messages = jsonList.stream()
+                .map(this::deserialize)
                 .toList();
+
+        return new ChatHistoryResponse(messages, hasMore);
+    }
+
+    private ChatMessage deserialize(String json) {
+        try {
+            return objectMapper.readValue(json, ChatMessage.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to deserialize message", e);
+        }
     }
 }

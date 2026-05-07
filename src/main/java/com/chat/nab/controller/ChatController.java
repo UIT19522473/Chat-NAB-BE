@@ -1,14 +1,9 @@
 package com.chat.nab.controller;
 
-import com.chat.nab.dto.ChatMessage;
+import com.chat.nab.dto.ChatHistoryResponse;
 import com.chat.nab.service.ChatService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -18,7 +13,10 @@ public class ChatController {
     private final ChatService chatService;
 
     @GetMapping("/{roomId}/messages")
-    public List<ChatMessage> getMessages(@PathVariable String roomId) {
-        return chatService.getMessages(roomId);
+    public ChatHistoryResponse getMessages(
+            @PathVariable String roomId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return chatService.getPagedMessages(roomId, page, size);
     }
 }
