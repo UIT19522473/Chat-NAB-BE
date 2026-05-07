@@ -4,6 +4,8 @@ import com.chat.nab.dto.ChatMessage;
 import com.chat.nab.dto.NotificationMessage;
 import com.chat.nab.dto.TypingEvent;
 import com.chat.nab.service.ChatService;
+import com.chat.nab.service.FcmService;
+import com.chat.nab.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Controller;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -23,6 +27,8 @@ import java.util.regex.Pattern;
 public class ChatWebSocketController {
 
     private final ChatService chatService;
+    private final UserService userService;
+    private final FcmService fcmService;
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
@@ -73,17 +79,40 @@ public class ChatWebSocketController {
         }
 
         if (mentionAll) {
+            // STOMP broadcast toàn phòng
             notification.setType("mention_all");
             messagingTemplate.convertAndSend(
                     "/topic/rooms/" + message.getRoomId() + "/notifications", notification);
+
+            // FCM push tới tất cả user trừ người gửi
+            List<String> tokens = userService.getAllFcmTokensExcept(message.getUserId());
+            fcmService.sendPushNotification(
+                    tokens,
+                    "NAB Chat",
+                    message.getUserId() + " đã tag tất cả: " + message.getContent(),
+                    Map.of("url", "/", "roomId", message.getRoomId())
+            );
         }
 
-        // Gửi notification cá nhân, bỏ qua chính người gửi
+        // Mention từng user cụ thể
         for (String targetUserId : mentioned) {
             if (targetUserId.equals(message.getUserId())) continue;
+
+            // STOMP notification cá nhân
             notification.setType("mention");
             messagingTemplate.convertAndSend(
                     "/topic/users/" + targetUserId + "/notifications", notification);
+
+            // FCM push cá nhân
+            String token = userService.getFcmToken(targetUserId);
+            if (token != null && !token.isBlank()) {
+                fcmService.sendPushNotification(
+                        List.of(token),
+                        "NAB Chat",
+                        message.getUserId() + " đã tag bạn: " + message.getContent(),
+                        Map.of("url", "/", "roomId", message.getRoomId())
+                );
+            }
         }
     }
 }

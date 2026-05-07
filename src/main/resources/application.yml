@@ -9,3 +9,7 @@ server:
 frontend:
   url: ${FRONTEND_URL:http://localhost:3000}
   ws: ${FRONTEND_WS:*}
+
+firebase:
+  service-account:
+    path: ${FIREBASE_SERVICE_ACCOUNT_PATH:classpath:/firebase-service-account.json}

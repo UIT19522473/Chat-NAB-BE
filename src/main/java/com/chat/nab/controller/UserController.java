@@ -41,8 +41,18 @@ public class UserController {
         if (userId == null || userId.isBlank()) {
             return ResponseEntity.badRequest().body("userId is required");
         }
-        
         userService.releaseUser(userId);
         return ResponseEntity.ok("Đã giải phóng user: " + userId);
+    }
+
+    @PostMapping("/{userId}/fcm-token")
+    public ResponseEntity<String> saveFcmToken(@PathVariable String userId,
+                                               @RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body("token is required");
+        }
+        userService.saveFcmToken(userId, token);
+        return ResponseEntity.ok("OK");
     }
 }

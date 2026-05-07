@@ -68,4 +68,23 @@ public class UserService {
             redisTemplate.delete(sessionKey);
         }
     }
+
+    // FCM token methods
+    private static final String FCM_KEY = "chat:fcm:%s";
+
+    public void saveFcmToken(String userId, String token) {
+        redisTemplate.opsForValue().set(String.format(FCM_KEY, userId), token);
+    }
+
+    public String getFcmToken(String userId) {
+        return redisTemplate.opsForValue().get(String.format(FCM_KEY, userId));
+    }
+
+    public List<String> getAllFcmTokensExcept(String excludeUserId) {
+        return ALL_USERS.stream()
+                .filter(id -> !id.equals(excludeUserId))
+                .map(this::getFcmToken)
+                .filter(token -> token != null && !token.isBlank())
+                .toList();
+    }
 }
